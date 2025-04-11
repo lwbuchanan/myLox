@@ -6,11 +6,13 @@ import net.lwbuchanan.lox.Expr.Binary;
 import net.lwbuchanan.lox.Expr.Grouping;
 import net.lwbuchanan.lox.Expr.Literal;
 import net.lwbuchanan.lox.Expr.Unary;
+import net.lwbuchanan.lox.Expr.Variable;
 import net.lwbuchanan.lox.Stmt.Expression;
 import net.lwbuchanan.lox.Stmt.Print;
+import net.lwbuchanan.lox.Stmt.Var;
 
-class Interpreter implements Expr.Visitor<Object>,
-                             Stmt.Visitor<Void> {
+class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+  private Environment environment = new Environment();
 
   void interpret(List<Stmt> statements) {
     try {
@@ -145,6 +147,11 @@ class Interpreter implements Expr.Visitor<Object>,
   }
 
   @Override
+  public Object visitVariableExpr(Variable expr) {
+    return environment.get(expr.name);
+  }
+
+  @Override
   public Void visitExpressionStmt(Expression stmt) {
     evaluate(stmt.expression);
     return null;
@@ -157,4 +164,14 @@ class Interpreter implements Expr.Visitor<Object>,
     return null;
   }
 
+  @Override
+  public Void visitVarStmt(Var stmt) {
+    Object value = null;
+    if (stmt.initializer != null) {
+      value = evaluate(stmt.initializer);
+    }
+
+    environment.define(stmt.name.lexeme, value);
+    return null;
+  }
 }

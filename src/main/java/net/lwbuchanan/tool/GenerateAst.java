@@ -17,11 +17,13 @@ public class GenerateAst {
       "Binary   : Expr left, Token operator, Expr right",
       "Grouping : Expr expression", 
       "Literal  : Object value", 
-      "Unary    : Token operator, Expr right"
+      "Unary    : Token operator, Expr right",
+      "Variable : Token name"
     ));
     defineAst(outputDir, "Stmt", Arrays.asList(
       "Expression : Expr expression", 
-      "Print      : Expr expression"
+      "Print      : Expr expression",
+      "Var        : Token name, Expr initializer"
     ));
   }
 
@@ -85,4 +87,6 @@ public class GenerateAst {
 
     writer.println("  }");
   }
+
+  
 }
