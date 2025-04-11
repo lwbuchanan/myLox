@@ -1,6 +1,7 @@
 bin/
-
+target/
 *.class
 *.log
+*.jar
 
 .vscode/
