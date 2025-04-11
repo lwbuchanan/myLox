@@ -1,16 +1,22 @@
 package net.lwbuchanan.lox;
 
+import java.util.List;
+
 import net.lwbuchanan.lox.Expr.Binary;
 import net.lwbuchanan.lox.Expr.Grouping;
 import net.lwbuchanan.lox.Expr.Literal;
 import net.lwbuchanan.lox.Expr.Unary;
+import net.lwbuchanan.lox.Stmt.Expression;
+import net.lwbuchanan.lox.Stmt.Print;
 
-class Interpreter implements Expr.Visitor<Object> {
+class Interpreter implements Expr.Visitor<Object>,
+                             Stmt.Visitor<Void> {
 
-  void interpret(Expr expression) {
+  void interpret(List<Stmt> statements) {
     try {
-      Object value = evaluate(expression);
-      System.out.println(stringify(value));
+      for (Stmt statement : statements) {
+        execute(statement);
+      }
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
     }
@@ -33,6 +39,10 @@ class Interpreter implements Expr.Visitor<Object> {
 
   private Object evaluate(Expr expr) {
     return expr.accept(this);
+  }
+
+  private void execute(Stmt stmt) {
+    stmt.accept(this);
   }
 
   private boolean isTruthy(Object object) {
@@ -131,6 +141,19 @@ class Interpreter implements Expr.Visitor<Object> {
     }
 
     // Should not be reachable
+    return null;
+  }
+
+  @Override
+  public Void visitExpressionStmt(Expression stmt) {
+    evaluate(stmt.expression);
+    return null;
+  }
+
+  @Override
+  public Void visitPrintStmt(Print stmt) {
+    Object value = evaluate(stmt.expression);
+    System.out.println(stringify(value));
     return null;
   }
 
