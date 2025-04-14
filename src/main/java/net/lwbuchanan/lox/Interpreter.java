@@ -2,11 +2,13 @@ package net.lwbuchanan.lox;
 
 import java.util.List;
 
+import net.lwbuchanan.lox.Expr.Assign;
 import net.lwbuchanan.lox.Expr.Binary;
 import net.lwbuchanan.lox.Expr.Grouping;
 import net.lwbuchanan.lox.Expr.Literal;
 import net.lwbuchanan.lox.Expr.Unary;
 import net.lwbuchanan.lox.Expr.Variable;
+import net.lwbuchanan.lox.Stmt.Block;
 import net.lwbuchanan.lox.Stmt.Expression;
 import net.lwbuchanan.lox.Stmt.Print;
 import net.lwbuchanan.lox.Stmt.Var;
@@ -45,6 +47,19 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
   private void execute(Stmt stmt) {
     stmt.accept(this);
+  }
+
+  private void executeBlock(List<Stmt> statements, Environment environment) {
+    Environment previous = this.environment;
+    try {
+      this.environment = environment;
+
+      for (Stmt statement : statements) {
+        execute(statement);
+      }
+    } finally {
+      this.environment = previous;
+    }
   }
 
   private boolean isTruthy(Object object) {
@@ -152,6 +167,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   @Override
+  public Object visitAssignExpr(Assign expr) {
+    Object value = evaluate(expr.value);
+    environment.assign(expr.name, value);
+    return value;
+  }
+
+  @Override
   public Void visitExpressionStmt(Expression stmt) {
     evaluate(stmt.expression);
     return null;
@@ -172,6 +194,12 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     environment.define(stmt.name.lexeme, value);
+    return null;
+  }
+
+  @Override
+  public Void visitBlockStmt(Block stmt) {
+    executeBlock(stmt.statements, new Environment(environment));
     return null;
   }
 }
