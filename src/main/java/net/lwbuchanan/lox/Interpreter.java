@@ -6,12 +6,15 @@ import net.lwbuchanan.lox.Expr.Assign;
 import net.lwbuchanan.lox.Expr.Binary;
 import net.lwbuchanan.lox.Expr.Grouping;
 import net.lwbuchanan.lox.Expr.Literal;
+import net.lwbuchanan.lox.Expr.Logical;
 import net.lwbuchanan.lox.Expr.Unary;
 import net.lwbuchanan.lox.Expr.Variable;
 import net.lwbuchanan.lox.Stmt.Block;
 import net.lwbuchanan.lox.Stmt.Expression;
+import net.lwbuchanan.lox.Stmt.If;
 import net.lwbuchanan.lox.Stmt.Print;
 import net.lwbuchanan.lox.Stmt.Var;
+import net.lwbuchanan.lox.Stmt.While;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   private Environment environment = new Environment();
@@ -174,6 +177,19 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   @Override
+  public Object visitLogicalExpr(Logical expr) {
+    Object left = evaluate(expr.left);
+
+    if (expr.operator.type == TokenType.OR) {
+      if (isTruthy(left)) return left;
+    } else {
+      if (!isTruthy(left)) return left;
+    }
+
+    return evaluate(expr.right);
+  }
+
+  @Override
   public Void visitExpressionStmt(Expression stmt) {
     evaluate(stmt.expression);
     return null;
@@ -200,6 +216,24 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   @Override
   public Void visitBlockStmt(Block stmt) {
     executeBlock(stmt.statements, new Environment(environment));
+    return null;
+  }
+
+  @Override
+  public Void visitIfStmt(If stmt) {
+    if (isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.thenBranch);
+    } else if (stmt.elseBranch != null) {
+      execute(stmt.elseBranch);
+    }
+    return null;
+  }
+
+  @Override
+  public Void visitWhileStmt(While stmt) {
+    while (isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.body);
+    }
     return null;
   }
 }
