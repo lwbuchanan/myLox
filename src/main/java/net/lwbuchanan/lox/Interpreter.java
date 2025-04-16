@@ -1,9 +1,11 @@
 package net.lwbuchanan.lox;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import net.lwbuchanan.lox.Expr.Assign;
 import net.lwbuchanan.lox.Expr.Binary;
+import net.lwbuchanan.lox.Expr.Call;
 import net.lwbuchanan.lox.Expr.Grouping;
 import net.lwbuchanan.lox.Expr.Literal;
 import net.lwbuchanan.lox.Expr.Logical;
@@ -11,13 +13,30 @@ import net.lwbuchanan.lox.Expr.Unary;
 import net.lwbuchanan.lox.Expr.Variable;
 import net.lwbuchanan.lox.Stmt.Block;
 import net.lwbuchanan.lox.Stmt.Expression;
+import net.lwbuchanan.lox.Stmt.Function;
 import net.lwbuchanan.lox.Stmt.If;
 import net.lwbuchanan.lox.Stmt.Print;
 import net.lwbuchanan.lox.Stmt.Var;
 import net.lwbuchanan.lox.Stmt.While;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-  private Environment environment = new Environment();
+  final Environment globals = new Environment();
+  private Environment environment = globals;
+
+  Interpreter() {
+    globals.define("clock", new LoxCallable() {
+      @Override
+      public int arity() { return 0; }
+
+      @Override
+      public Object call(Interpreter interpreter, List<Object> arguments) {
+        return (double)System.currentTimeMillis() / 1000.0;
+      }
+
+      @Override
+      public String toString() { return "<native fn>"; }
+    });
+  }
 
   void interpret(List<Stmt> statements) {
     try {
@@ -52,7 +71,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     stmt.accept(this);
   }
 
-  private void executeBlock(List<Stmt> statements, Environment environment) {
+  void executeBlock(List<Stmt> statements, Environment environment) {
     Environment previous = this.environment;
     try {
       this.environment = environment;
@@ -190,6 +209,28 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   @Override
+  public Object visitCallExpr(Call expr) {
+    Object callee = evaluate(expr.callee);
+
+    List<Object> arguments = new ArrayList<>();
+    for (Expr argument : expr.arguments) {
+      arguments.add(evaluate(argument));
+    }
+
+    if (!(callee instanceof LoxCallable)) {
+      throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+    }
+
+    LoxCallable function = (LoxCallable)callee;
+    if (arguments.size() != function.arity()) {
+      throw new RuntimeError(expr.paren, "Expected " + function.arity() + 
+        " arguments but got " + arguments.size() + ".");
+    }
+
+    return function.call(this, arguments);
+  }
+
+  @Override
   public Void visitExpressionStmt(Expression stmt) {
     evaluate(stmt.expression);
     return null;
@@ -234,6 +275,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     while (isTruthy(evaluate(stmt.condition))) {
       execute(stmt.body);
     }
+    return null;
+  }
+
+  @Override
+  public Void visitFunctionStmt(Function stmt) {
+    LoxFunction function = new LoxFunction(stmt);
+    environment.define(stmt.name.lexeme, function);
     return null;
   }
 }
