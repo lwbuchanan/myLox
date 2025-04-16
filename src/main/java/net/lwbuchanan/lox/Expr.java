@@ -4,14 +4,14 @@ import java.util.List;
 
 abstract class Expr {
   interface Visitor<R> {
-    R visitAssignExpr(Assign expr);
-    R visitBinaryExpr(Binary expr);
-    R visitCallExpr(Call expr);
-    R visitGroupingExpr(Grouping expr);
-    R visitLiteralExpr(Literal expr);
-    R visitLogicalExpr(Logical expr);
-    R visitUnaryExpr(Unary expr);
-    R visitVariableExpr(Variable expr);
+    R visitAssignExpr(Expr.Assign expr);
+    R visitBinaryExpr(Expr.Binary expr);
+    R visitCallExpr(Expr.Call expr);
+    R visitGroupingExpr(Expr.Grouping expr);
+    R visitLiteralExpr(Expr.Literal expr);
+    R visitLogicalExpr(Expr.Logical expr);
+    R visitUnaryExpr(Expr.Unary expr);
+    R visitVariableExpr(Expr.Variable expr);
   }
 
   static class Assign extends Expr {

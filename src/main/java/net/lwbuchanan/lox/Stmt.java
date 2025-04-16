@@ -4,13 +4,14 @@ import java.util.List;
 
 abstract class Stmt {
   interface Visitor<R> {
-    R visitBlockStmt(Block stmt);
-    R visitExpressionStmt(Expression stmt);
-    R visitFunctionStmt(Function stmt);
-    R visitIfStmt(If stmt);
-    R visitPrintStmt(Print stmt);
-    R visitVarStmt(Var stmt);
-    R visitWhileStmt(While stmt);
+    R visitBlockStmt(Stmt.Block stmt);
+    R visitExpressionStmt(Stmt.Expression stmt);
+    R visitFunctionStmt(Stmt.Function stmt);
+    R visitIfStmt(Stmt.If stmt);
+    R visitPrintStmt(Stmt.Print stmt);
+    R visitReturnStmt(Stmt.Return stmt);
+    R visitVarStmt(Stmt.Var stmt);
+    R visitWhileStmt(Stmt.While stmt);
   }
 
   static class Block extends Stmt {
@@ -78,6 +79,20 @@ abstract class Stmt {
     @Override
     <R> R accept(Visitor<R> visitor) {
       return visitor.visitPrintStmt(this);
+    }
+  }
+
+  static class Return extends Stmt {
+    final Token keyword;
+    final Expr value;
+    Return(Token keyword, Expr value) {
+      this.keyword = keyword;
+      this.value = value;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitReturnStmt(this);
     }
   }
 
