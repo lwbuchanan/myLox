@@ -6,7 +6,7 @@
 
     <groupId>net.lwbuchanan</groupId>
     <artifactId>mylox</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <name>myLox</name>
     <url>https://github.com/lwbuchanan/myLox</url>
