@@ -3,5 +3,6 @@ target/
 *.class
 *.log
 *.jar
+*.o
 
 .vscode/
