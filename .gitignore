@@ -4,5 +4,6 @@ target/
 *.log
 *.jar
 *.o
+main
 
 .vscode/

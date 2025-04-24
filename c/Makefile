@@ -29,7 +29,7 @@ debug: CFLAGS += $(DEBUG_CFLAGS)
 debug: $(TARGET)
 
 $(TARGET): $(OBJ_FILES)
-	$(CC) -o bin/clox $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS)
 
 .PHONY: clean
 
